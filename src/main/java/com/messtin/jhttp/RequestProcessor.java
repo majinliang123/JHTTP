@@ -79,6 +79,7 @@ public class RequestProcessor implements Runnable {
         out.write("Server: JHTTP 2.0 \r\n");
         out.write("Content-length: " + length + "\r\n");
         out.write("Content-type: " + contentType + "\r\n");
+        out.write("\r\n");
         out.flush();
     }
 }
