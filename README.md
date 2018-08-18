@@ -1,13 +1,16 @@
 # JHTTP
 
 ### Basic
-- A Http server
-- Accept get/post request
+A Http server which is similar to tomcat.
 
-### Tech
-- java
-- socket
+### Functions
 
-# TODO
-Will change this project like a tomcat, and learn how to code from 
-https://gitee.com/coodyer/minicat
+- support basic http request
+- support session
+- support Servlet
+- support Filter
+
+### Acknowledgement
+Learn a lot from below repository
+
+- https://gitee.com/coodyer/minicat/tree/master
