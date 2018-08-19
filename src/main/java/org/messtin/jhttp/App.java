@@ -7,7 +7,7 @@ public class App {
 
     private static final Logger logger = LogManager.getLogger(App.class);
 
-    public static void main(String[] args){
-        logger.info(1111);
+    public static void main(String[] args) throws Exception{
+        Core.init();
     }
 }

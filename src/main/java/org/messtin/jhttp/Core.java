@@ -3,37 +3,27 @@ package org.messtin.jhttp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.messtin.jhttp.config.Config;
+import org.messtin.jhttp.exception.JHttpInitException;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.List;
-
-public class Core {
+public final class Core {
 
     private static final Logger logger = LogManager.getLogger(Core.class);
+    private static boolean INITIALIZED = false;
 
-    public void init(List<Class<?>> clazzs) throws Exception {
+    public static void init(Class<?>... clazzs) throws Exception {
 
-        logger.info("Initializing JHttp.");
-
-        initServer();
-        initServlet();
-        initFilter();
-
-        logger.info("JHttp Started.");
+        if (!INITIALIZED) {
+            logger.info("Initializing JHttp.");
+            Init.init(clazzs);
+            setInitialized();
+            logger.info("JHttp Started.");
+        } else {
+            throw new JHttpInitException("JHTTP has Initialized on port: " +
+                    Config.PORT);
+        }
     }
 
-    private void initServer() throws IOException {
-        ServerSocket server = new ServerSocket(Config.PORT);
-        server.setSoTimeout(Config.TIME_OUT);
-    }
-
-    private void initServlet() {
-
-    }
-
-    private void initFilter() {
-
+    private static void setInitialized() {
+        INITIALIZED = true;
     }
 }
