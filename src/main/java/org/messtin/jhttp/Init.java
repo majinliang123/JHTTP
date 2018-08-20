@@ -7,8 +7,8 @@ import org.messtin.jhttp.annotation.Servlet;
 import org.messtin.jhttp.config.Config;
 import org.messtin.jhttp.container.FilterContainer;
 import org.messtin.jhttp.container.ServletContainer;
-import org.messtin.jhttp.entity.JFilter;
-import org.messtin.jhttp.entity.JServlet;
+import org.messtin.jhttp.servlet.HttpFilter;
+import org.messtin.jhttp.servlet.HttpServlet;
 import org.messtin.jhttp.server.BServer;
 import org.messtin.jhttp.server.Server;
 
@@ -20,7 +20,7 @@ public final class Init {
 
     public static void init(Class<?>... clazzs) throws IOException, ReflectiveOperationException {
 
-        logger.info("Start register Servlet and Filter.");
+        logger.info("Start register HttpServlet and HttpFilter.");
         for (int i = 0; i < clazzs.length; i++) {
             Class<?> clazz = clazzs[i];
             initServlet(clazz);
@@ -33,26 +33,26 @@ public final class Init {
 
     private static void initServlet(Class<?> clazz)
             throws ReflectiveOperationException {
-        if (JServlet.class.isAssignableFrom(clazz)) {
-            Servlet servletAnnotation = clazz.getAnnotation(Servlet.class);
+        if (HttpServlet.class.isAssignableFrom(clazz)) {
+            Servlet servletAnnotation = clazz.getAnnotation(org.messtin.jhttp.annotation.Servlet.class);
             if (servletAnnotation != null) {
-                JServlet jServlet = (JServlet) clazz.newInstance();
-                ServletContainer.put(servletAnnotation.value(), jServlet);
-                logger.info("Registered servlet {} >> {}.",
-                        jServlet.getClass().getName(), servletAnnotation.value());
+                HttpServlet httpServlet = (HttpServlet) clazz.newInstance();
+                ServletContainer.put(servletAnnotation.value(), httpServlet);
+                logger.info("Registered HttpServlet {} >> {}.",
+                        httpServlet.getClass().getName(), servletAnnotation.value());
             }
         }
     }
 
     private static void initFilter(Class<?> clazz)
             throws ReflectiveOperationException {
-        if (JFilter.class.isAssignableFrom(clazz)) {
-            Filter filterAnnotation = clazz.getAnnotation(Filter.class);
+        if (HttpFilter.class.isAssignableFrom(clazz)) {
+            Filter filterAnnotation = clazz.getAnnotation(org.messtin.jhttp.annotation.Filter.class);
             if (filterAnnotation != null) {
-                JFilter jFilter = (JFilter) clazz.newInstance();
-                FilterContainer.put(filterAnnotation.value(), jFilter);
-                logger.info("Registered filter {} >> {}.",
-                        jFilter.getClass().getName(), filterAnnotation.value());
+                HttpFilter httpFilter = (HttpFilter) clazz.newInstance();
+                FilterContainer.put(filterAnnotation.value(), httpFilter);
+                logger.info("Registered HttpFilter {} >> {}.",
+                        httpFilter.getClass().getName(), filterAnnotation.value());
             }
         }
 

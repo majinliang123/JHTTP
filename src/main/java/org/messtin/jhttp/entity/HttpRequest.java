@@ -1,11 +1,16 @@
 package org.messtin.jhttp.entity;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public class JHttpRequest {
+public class HttpRequest {
 
     public enum Method {
         GET, POST
+    }
+
+    public HttpRequest(){
+        this.headers = new HashMap<>();
     }
 
     private String url;

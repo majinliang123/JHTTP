@@ -3,7 +3,7 @@ package org.messtin.jhttp.server;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.messtin.jhttp.config.Config;
-import org.messtin.jhttp.process.BProcesser;
+import org.messtin.jhttp.process.BioProcesser;
 import org.messtin.jhttp.process.Pool;
 import org.messtin.jhttp.process.Processor;
 
@@ -32,10 +32,13 @@ public class BServer implements Server {
             while (true) {
                 try {
                     Socket socket = server.accept();
-                    Processor processor = new BProcesser(socket);
+                    logger.info("Handling request from: {}",
+                            socket.getRemoteSocketAddress());
+
+                    Processor processor = new BioProcesser(socket);
                     Pool.submit(processor);
                 } catch (IOException ex) {
-
+                    logger.error("Failed accept request.");
                 }
 
             }

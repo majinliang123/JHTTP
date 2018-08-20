@@ -1,73 +1,84 @@
 package org.messtin.jhttp.process;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.messtin.jhttp.config.Config;
+import org.messtin.jhttp.config.Constants;
 import org.messtin.jhttp.container.FilterContainer;
 import org.messtin.jhttp.container.ServletContainer;
-import org.messtin.jhttp.entity.JFilter;
-import org.messtin.jhttp.entity.JHttpRequest;
-import org.messtin.jhttp.entity.JHttpResponse;
-import org.messtin.jhttp.entity.JServlet;
+import org.messtin.jhttp.servlet.HttpFilter;
+import org.messtin.jhttp.entity.HttpRequest;
+import org.messtin.jhttp.entity.HttpResponse;
+import org.messtin.jhttp.servlet.HttpServlet;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Date;
+import java.util.List;
 
 public abstract class Processor {
+    private static final Logger logger = LogManager.getLogger(Processor.class);
+
     protected Socket socket;
-    protected JHttpRequest request;
-    protected JHttpResponse response;
+    protected HttpRequest request;
+    protected HttpResponse response;
 
     public Processor(Socket socket) {
         this.socket = socket;
-        this.request = new JHttpRequest();
-        this.response = new JHttpResponse();
+        this.request = new HttpRequest();
+        this.response = new HttpResponse();
     }
 
     public void process() {
+        logger.info("Start process request from: {}", socket.getRemoteSocketAddress());
         buildRequest();
         doFilter(request, response);
         doServlet(request, response);
         buildReponse();
         sendReponse();
         closeSocket();
+        logger.info("Complete process request from: {}", socket.getRemoteSocketAddress());
     }
 
     protected abstract void buildRequest();
 
     private void buildReponse() {
-        response.setVersion("HTTP/1.1");
-        response.setStatusCode(200);
-        response.setMessage("OK");
+        response.setVersion(Constants.HTTP_V1_1_VERSION);
+        response.setStatusCode(Constants.STATUS_CODE_200);
+        response.setMessage(Constants.STATUS_MESSAGE_OK);
         response.setDate(new Date());
         response.setContentLength(response.getBody().getBytes().length);
     }
 
-    private void doFilter(JHttpRequest request, JHttpResponse response) {
+    private void doFilter(HttpRequest request, HttpResponse response) {
         String url = request.getUrl();
-        JFilter jFilter = FilterContainer.get(url);
-        if (jFilter != null) {
-            jFilter.doFilter(request, response);
+        List<HttpFilter> httpFilters= FilterContainer.get(url, Config.FILTER_ANT_MATCH);
+        if (httpFilters != null) {
+            httpFilters.stream()
+                    .forEach(httpFilter ->{
+                        httpFilter.doFilter(request, response);
+                    });
         }
-
     }
 
-    private void doServlet(JHttpRequest request, JHttpResponse response) {
+    private void doServlet(HttpRequest request, HttpResponse response) {
         String url = request.getUrl();
-        JServlet jServlet = ServletContainer.get(url);
-        if (jServlet != null) {
-            jServlet.doService(request, response);
+        HttpServlet httpServlet = ServletContainer.get(url);
+        if (httpServlet != null) {
+            httpServlet.doService(request, response);
         }
     }
 
     private void sendReponse() {
-        try (OutputStreamWriter out =
+        try (OutputStreamWriter writer =
                      new OutputStreamWriter(new BufferedOutputStream(socket.getOutputStream()))) {
 
-            out.write(response.formatToString().toCharArray());
-            out.flush();
+            writer.write(response.formatToString().toCharArray());
+            writer.flush();
         } catch (IOException ex) {
-
+            logger.error("Failed to write response to address: {}", socket.getRemoteSocketAddress());
         }
     }
 
@@ -75,7 +86,7 @@ public abstract class Processor {
         try {
             socket.close();
         } catch (Exception ex) {
-
+            logger.error("Failed to close socket with address: {}", socket.getRemoteSocketAddress());
         }
 
     }

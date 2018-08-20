@@ -3,7 +3,7 @@ package org.messtin.jhttp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.messtin.jhttp.config.Config;
-import org.messtin.jhttp.exception.JHttpInitException;
+import org.messtin.jhttp.exception.HttpInitException;
 
 public final class Core {
 
@@ -18,7 +18,7 @@ public final class Core {
             setInitialized();
             logger.info("JHttp Started.");
         } else {
-            throw new JHttpInitException("JHTTP has Initialized on port: " +
+            throw new HttpInitException("JHTTP has Initialized on port: " +
                     Config.PORT);
         }
     }

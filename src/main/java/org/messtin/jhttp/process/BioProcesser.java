@@ -1,11 +1,15 @@
 package org.messtin.jhttp.process;
 
-import org.messtin.jhttp.entity.JHttpRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.messtin.jhttp.config.Constants;
+import org.messtin.jhttp.entity.HttpRequest;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -14,9 +18,10 @@ import java.util.Map;
  * The request message structure:
  * http://www.runoob.com/http/http-messages.html
  */
-public class BProcesser extends Processor {
+public class BioProcesser extends Processor {
+    private static final Logger logger = LogManager.getLogger(BioProcesser.class);
 
-    public BProcesser(Socket socket) {
+    public BioProcesser(Socket socket) {
         super(socket);
     }
 
@@ -24,18 +29,23 @@ public class BProcesser extends Processor {
     protected void buildRequest() {
 
         try {
-            InputStreamReader in =
+            InputStreamReader reader =
                     new InputStreamReader(new BufferedInputStream(socket.getInputStream()));
             StringBuilder reqStrBuilder = new StringBuilder();
 
             char[] c = new char[4096];
             int len = -1;
             do {
-                len = in.read(c);
+                len = reader.read(c);
                 reqStrBuilder.append(c, 0, len);
-
             } while (len == 4096);
 
+            /**
+             * There are two parts in the request
+             * one is header and the other is body
+             * They are split by \r\n\r\n
+             * But sometime there are no body for get request
+             */
             String reqStr = reqStrBuilder.toString();
             String[] reqArr = reqStr.split("\r\n\r\n");
             buildHeaders(reqArr[0]);
@@ -44,7 +54,8 @@ public class BProcesser extends Processor {
             }
 
         } catch (IOException ex) {
-            System.err.println(ex);
+            logger.error("Failed read input stream from address: {}",
+                    socket.getRemoteSocketAddress());
         }
     }
 
@@ -53,17 +64,18 @@ public class BProcesser extends Processor {
 
         String statusStr = headers[0];
         String[] status = statusStr.split("\\s+");
-        request.setMethod(JHttpRequest.Method.valueOf(status[0]));
+        request.setMethod(HttpRequest.Method.valueOf(status[0]));
         request.setUrl(status[1]);
         request.setVersion(status[2]);
 
-//        for (int i = 1; i < headers.length; i++) {
-//            String headerStr = headers[i];
-//            String[] keyVal = headerStr.split(":");
-//            Map<String, String> reqHeaders = request.getHeaders();
-//            reqHeaders.put(keyVal[0], keyVal[1]);
-//        }
-
+        Arrays.stream(headers)
+                .skip(1)
+                .forEach(headerStr -> {
+                    int colonIndex = headerStr.indexOf(Constants.COLON);
+                    String key = headerStr.substring(0, colonIndex).trim();
+                    String val = headerStr.substring(colonIndex + 1).trim();
+                    request.getHeaders().put(key, val);
+                });
     }
 
     private void buildBody(String bodyStr) {

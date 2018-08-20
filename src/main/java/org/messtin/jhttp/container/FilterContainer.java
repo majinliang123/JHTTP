@@ -1,27 +1,45 @@
 package org.messtin.jhttp.container;
 
-import org.messtin.jhttp.entity.JFilter;
+import org.messtin.jhttp.servlet.HttpFilter;
+import org.messtin.jhttp.util.Util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public final class FilterContainer {
 
-    private static Map<String, JFilter> filterMap;
+    private static Map<String, HttpFilter> filterMap;
 
-    // lazy init when have filter
-    // new filter will replace old filter if have same path
-    public static void put(String path, JFilter jFilter) {
+    // lazy init when have httpFilter
+    // new httpFilter will replace old httpFilter if have same path
+    public static void put(String path, HttpFilter httpFilter) {
         if (filterMap == null) {
             filterMap = new HashMap<>();
         }
-        filterMap.put(path, jFilter);
+        filterMap.put(path, httpFilter);
     }
 
-    public static JFilter get(String path) {
+    public static List<HttpFilter> get(String path, boolean antMatch) {
         if (filterMap == null) {
             return null;
         }
-        return filterMap.get(path);
+
+        if (antMatch) {
+            return filterMap.keySet()
+                    .stream()
+                    .filter(filterRegex -> Util.isAntMatch(path, filterRegex))
+                    .map(filterRegex -> filterMap.get(filterRegex))
+                    .collect(Collectors.toList());
+
+        } else {
+            return filterMap.keySet()
+                    .stream()
+                    .filter(filterPath -> filterPath.equals(path))
+                    .map(filterPath -> filterMap.get(filterPath))
+                    .collect(Collectors.toList());
+        }
+
     }
 }

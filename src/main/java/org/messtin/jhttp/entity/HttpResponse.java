@@ -2,7 +2,7 @@ package org.messtin.jhttp.entity;
 
 import java.util.Date;
 
-public class JHttpResponse {
+public class HttpResponse {
     private String version;
     private int statusCode;
     private String message;

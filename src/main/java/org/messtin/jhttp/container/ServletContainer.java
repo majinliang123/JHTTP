@@ -1,23 +1,23 @@
 package org.messtin.jhttp.container;
 
-import org.messtin.jhttp.entity.JServlet;
+import org.messtin.jhttp.servlet.HttpServlet;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public final class ServletContainer {
-    private static Map<String, JServlet> servletMap;
+    private static Map<String, HttpServlet> servletMap;
 
-    // lazy init when have servlet.
-    // new servlet will replace old servlet if have same path.
-    public static void put(String path, JServlet jServlet) {
+    // lazy init when have httpServlet.
+    // new httpServlet will replace old httpServlet if have same path.
+    public static void put(String path, HttpServlet httpServlet) {
         if (servletMap == null) {
             servletMap = new HashMap<>();
         }
-        servletMap.put(path, jServlet);
+        servletMap.put(path, httpServlet);
     }
 
-    public static JServlet get(String path) {
+    public static HttpServlet get(String path) {
         if (servletMap == null) {
             return null;
         }
