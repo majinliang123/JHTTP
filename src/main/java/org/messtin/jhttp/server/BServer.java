@@ -23,6 +23,7 @@ public class BServer implements Server {
         this.port = port;
         this.timeout = timeout;
         server = new ServerSocket(Config.PORT);
+//        server.setSoTimeout(3000);
         logger.info("Server listened on port: " + Config.PORT);
     }
 

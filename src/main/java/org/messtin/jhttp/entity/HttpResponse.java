@@ -9,6 +9,7 @@ public class HttpResponse {
     private Date date;
     private int contentLength;
     private String body = "";
+    private String contentType = "text/plain";
 
     public String getVersion() {
         return version;
@@ -58,11 +59,20 @@ public class HttpResponse {
         this.body = body;
     }
 
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
     public String formatToString(){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(version);
         stringBuilder.append(" ");
         stringBuilder.append(statusCode);
+        stringBuilder.append(" ");
         stringBuilder.append(message);
         stringBuilder.append("\r\n");
         stringBuilder.append("Date: ");
@@ -70,6 +80,9 @@ public class HttpResponse {
         stringBuilder.append("\r\n");
         stringBuilder.append("Content-Length: ");
         stringBuilder.append(contentLength);
+        stringBuilder.append("\r\n");
+        stringBuilder.append("Content-Type: ");
+        stringBuilder.append(contentType);
         stringBuilder.append("\r\n\r\n");
         stringBuilder.append(body);
         return stringBuilder.toString();

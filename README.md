@@ -11,6 +11,9 @@ It is updating.
 - support Servlet
 - support Filter
 
+### Performance
+- BioServer could accept 1000 requests in 1086ms.
+
 ### Acknowledgement
 Learn a lot from below repository
 
