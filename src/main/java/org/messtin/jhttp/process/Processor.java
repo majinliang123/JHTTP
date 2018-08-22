@@ -11,45 +11,48 @@ import org.messtin.jhttp.entity.HttpRequest;
 import org.messtin.jhttp.entity.HttpResponse;
 import org.messtin.jhttp.servlet.HttpServlet;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public abstract class Processor {
     private static final Logger logger = LogManager.getLogger(Processor.class);
 
-    protected Socket socket;
+    protected  String remoteAddress;
     protected HttpRequest request;
     protected HttpResponse response;
 
-    public Processor(Socket socket) {
-        this.socket = socket;
+    public Processor(String remoteAddress) {
+        this.remoteAddress = remoteAddress;
         this.request = new HttpRequest();
         this.response = new HttpResponse();
     }
 
     public void process() {
-        logger.info("Start process request from: {}", socket.getRemoteSocketAddress());
+        logger.info("Start process request from: {}", remoteAddress);
         buildRequest();
         doFilter(request, response);
         doServlet(request, response);
         buildReponse();
         sendReponse();
-        closeSocket();
-        logger.info("Complete process request from: {}", socket.getRemoteSocketAddress());
+        close();
+        logger.info("Complete process request from: {}", remoteAddress);
     }
 
-    protected abstract void buildRequest();
-
-    private void buildReponse() {
-        response.setVersion(Constants.HTTP_V1_1_VERSION);
-        response.setStatusCode(Constants.STATUS_CODE_200);
-        response.setMessage(Constants.STATUS_MESSAGE_OK);
-        response.setDate(new Date());
-        response.setContentLength(response.getBody().getBytes().length);
+    protected void buildRequest(){
+        /**
+         * There are two parts in the request
+         * one is header and the other is body
+         * They are split by \r\n\r\n
+         * But sometime there are no body for get request
+         */
+        String reqStr = buildRequestStr();
+        String[] reqArr = reqStr.split("\r\n\r\n");
+        buildHeaders(reqArr[0]);
+        if (reqArr.length > 1) {
+            buildBody(reqArr[1]);
+        }
     }
 
     private void doFilter(HttpRequest request, HttpResponse response) {
@@ -71,23 +74,52 @@ public abstract class Processor {
         }
     }
 
-    private void sendReponse() {
-        try (OutputStreamWriter writer =
-                     new OutputStreamWriter(new BufferedOutputStream(socket.getOutputStream()))) {
+    private void buildReponse() {
+        response.setVersion(Constants.HTTP_V1_1_VERSION);
+        response.setStatusCode(Constants.STATUS_CODE_200);
+        response.setMessage(Constants.STATUS_MESSAGE_OK);
+        response.setDate(new Date());
+        response.setContentLength(response.getBody().getBytes().length);
 
-            writer.write(response.formatToString().toCharArray());
-            writer.flush();
-        } catch (IOException ex) {
-            logger.error("Failed to write response to address: {}", socket.getRemoteSocketAddress());
+        buildCookie();
+    }
+
+    protected abstract void sendReponse();
+
+    protected abstract void close();
+
+    /**  other functions  */
+    protected abstract String buildRequestStr();
+
+    private void buildHeaders(String headStr) {
+        String[] headers = headStr.split("\r\n");
+
+        String statusStr = headers[0];
+        String[] status = statusStr.split("\\s+");
+        request.setMethod(HttpRequest.Method.valueOf(status[0]));
+        request.setUrl(status[1]);
+        request.setVersion(status[2]);
+
+        Arrays.stream(headers)
+                .skip(1)
+                .forEach(headerStr -> {
+                    int colonIndex = headerStr.indexOf(Constants.COLON);
+                    String key = headerStr.substring(0, colonIndex).trim();
+                    String val = headerStr.substring(colonIndex + 1).trim();
+                    request.getHeaders().put(key, val);
+                });
+    }
+
+    private void buildBody(String bodyStr) {
+        request.setBody(bodyStr);
+    }
+
+    private void buildCookie(){
+        if(request.getHeaders().containsKey("Cookie")){
+            response.setSetCookie(request.getHeaders().get("Cookie"));
+        }else{
+            response.setSetCookie(UUID.randomUUID().toString());
         }
     }
 
-    public void closeSocket() {
-        try {
-            socket.close();
-        } catch (Exception ex) {
-            logger.error("Failed to close socket with address: {}", socket.getRemoteSocketAddress());
-        }
-
-    }
 }

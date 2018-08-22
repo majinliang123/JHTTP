@@ -11,19 +11,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class BServer implements Server {
+public class BioServer implements Server {
 
-    private static final Logger logger = LogManager.getLogger(BServer.class);
+    private static final Logger logger = LogManager.getLogger(BioServer.class);
 
-    private int port;
-    private int timeout;
     private ServerSocket server;
 
-    public BServer(int port, int timeout) throws IOException {
-        this.port = port;
-        this.timeout = timeout;
-        server = new ServerSocket(Config.PORT);
-//        server.setSoTimeout(3000);
+    public BioServer(int port) throws IOException {
+        server = new ServerSocket(port);
         logger.info("Server listened on port: " + Config.PORT);
     }
 

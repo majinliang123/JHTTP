@@ -10,6 +10,7 @@ public class HttpResponse {
     private int contentLength;
     private String body = "";
     private String contentType = "text/plain";
+    private String setCookie;
 
     public String getVersion() {
         return version;
@@ -67,6 +68,14 @@ public class HttpResponse {
         this.contentType = contentType;
     }
 
+    public String getSetCookie() {
+        return setCookie;
+    }
+
+    public void setSetCookie(String setCookie) {
+        this.setCookie = setCookie;
+    }
+
     public String formatToString(){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(version);
@@ -83,6 +92,9 @@ public class HttpResponse {
         stringBuilder.append("\r\n");
         stringBuilder.append("Content-Type: ");
         stringBuilder.append(contentType);
+        stringBuilder.append("\r\n");
+        stringBuilder.append("Set-Cookie: ");
+        stringBuilder.append(setCookie);
         stringBuilder.append("\r\n\r\n");
         stringBuilder.append(body);
         return stringBuilder.toString();

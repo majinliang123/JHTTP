@@ -9,7 +9,7 @@ import org.messtin.jhttp.container.FilterContainer;
 import org.messtin.jhttp.container.ServletContainer;
 import org.messtin.jhttp.servlet.HttpFilter;
 import org.messtin.jhttp.servlet.HttpServlet;
-import org.messtin.jhttp.server.BServer;
+import org.messtin.jhttp.server.BioServer;
 import org.messtin.jhttp.server.Server;
 
 import java.io.IOException;
@@ -59,7 +59,7 @@ public final class Init {
     }
 
     private static void initServer() throws IOException {
-        Server server = new BServer(Config.PORT, Config.TIME_OUT);
+        Server server = new BioServer(Config.PORT);
         server.service();
     }
 
