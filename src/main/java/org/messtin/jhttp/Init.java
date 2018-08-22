@@ -7,6 +7,7 @@ import org.messtin.jhttp.annotation.Servlet;
 import org.messtin.jhttp.config.Config;
 import org.messtin.jhttp.container.FilterContainer;
 import org.messtin.jhttp.container.ServletContainer;
+import org.messtin.jhttp.server.NioServer;
 import org.messtin.jhttp.servlet.HttpFilter;
 import org.messtin.jhttp.servlet.HttpServlet;
 import org.messtin.jhttp.server.BioServer;
@@ -59,7 +60,8 @@ public final class Init {
     }
 
     private static void initServer() throws IOException {
-        Server server = new BioServer(Config.PORT);
+//        Server server = new BioServer(Config.PORT);
+        Server server = new NioServer(Config.PORT);
         server.service();
     }
 
