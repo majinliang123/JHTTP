@@ -11,6 +11,7 @@ import org.messtin.jhttp.entity.HttpRequest;
 import org.messtin.jhttp.entity.HttpResponse;
 import org.messtin.jhttp.servlet.HttpServlet;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -29,18 +30,24 @@ public abstract class Processor {
         this.response = new HttpResponse();
     }
 
-    public void process() {
+    public void process (){
         logger.info("Start process request from: {}", remoteAddress);
-        buildRequest();
-        doFilter(request, response);
-        doServlet(request, response);
-        buildReponse();
-        sendReponse();
-        close();
-        logger.info("Complete process request from: {}", remoteAddress);
+        try {
+            buildRequest();
+            doFilter(request, response);
+            doServlet(request, response);
+            buildReponse();
+            sendReponse();
+            close();
+            logger.info("Complete process request from: {}", remoteAddress);
+        }catch (Exception e){
+            logger.error("Failed to process request from: {}", remoteAddress);
+            logger.error(e);
+        }
+
     }
 
-    protected void buildRequest(){
+    protected void buildRequest() throws IOException{
         /**
          * There are two parts in the request
          * one is header and the other is body
@@ -66,11 +73,11 @@ public abstract class Processor {
         }
     }
 
-    private void doServlet(HttpRequest request, HttpResponse response) {
+    private void doServlet(HttpRequest request, HttpResponse response) throws IllegalAccessException, InstantiationException {
         String url = request.getUrl();
-        HttpServlet httpServlet = ServletContainer.get(url);
+        Class<HttpServlet> httpServlet = ServletContainer.get(url);
         if (httpServlet != null) {
-            httpServlet.doService(request, response);
+            httpServlet.newInstance().doService(request, response);
         }
     }
 
@@ -84,12 +91,12 @@ public abstract class Processor {
         buildCookie();
     }
 
-    protected abstract void sendReponse();
+    protected abstract void sendReponse() throws IOException;
 
-    protected abstract void close();
+    protected abstract void close() throws IOException;
 
     /**  other functions  */
-    protected abstract String buildRequestStr();
+    protected abstract String buildRequestStr() throws IOException;
 
     private void buildHeaders(String headStr) {
         String[] headers = headStr.split("\r\n");

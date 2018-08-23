@@ -19,7 +19,7 @@ public class BioServer implements Server {
 
     public BioServer(int port) throws IOException {
         server = new ServerSocket(port);
-        logger.info("Server listened on port: " + Config.PORT);
+        logger.info("Server listened on port: " + port);
     }
 
     @Override
@@ -35,6 +35,7 @@ public class BioServer implements Server {
                     Pool.submit(processor);
                 } catch (IOException ex) {
                     logger.error("Failed accept request.");
+                    logger.error(ex);
                 }
 
             }

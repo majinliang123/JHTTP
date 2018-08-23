@@ -32,15 +32,14 @@ public final class Init {
         initServer();
     }
 
-    private static void initServlet(Class<?> clazz)
-            throws ReflectiveOperationException {
+    private static void initServlet(Class<?> clazz) {
         if (HttpServlet.class.isAssignableFrom(clazz)) {
             Servlet servletAnnotation = clazz.getAnnotation(org.messtin.jhttp.annotation.Servlet.class);
             if (servletAnnotation != null) {
-                HttpServlet httpServlet = (HttpServlet) clazz.newInstance();
+                Class<HttpServlet> httpServlet = (Class<HttpServlet>)clazz;
                 ServletContainer.put(servletAnnotation.value(), httpServlet);
                 logger.info("Registered HttpServlet {} >> {}.",
-                        httpServlet.getClass().getName(), servletAnnotation.value());
+                        httpServlet.getName(), servletAnnotation.value());
             }
         }
     }
@@ -60,8 +59,8 @@ public final class Init {
     }
 
     private static void initServer() throws IOException {
-//        Server server = new BioServer(Config.PORT);
-        Server server = new NioServer(Config.PORT);
+        Server server = new BioServer(Config.PORT);
+//        Server server = new NioServer(Config.PORT);
         server.service();
     }
 

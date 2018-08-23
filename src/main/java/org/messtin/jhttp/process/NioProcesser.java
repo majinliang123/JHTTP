@@ -1,58 +1,46 @@
 package org.messtin.jhttp.process;
 
+import org.messtin.jhttp.config.Config;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 
 public class NioProcesser extends Processor {
 
     private SelectionKey key;
-    private SocketChannel socketChannel;
-    public NioProcesser(SelectionKey key) throws IOException {
-        super(((SocketChannel)key.channel()).getRemoteAddress().toString());
+    private String address;
+
+    public NioProcesser(SelectionKey key, String address) throws IOException {
+        super(address);
         this.key = key;
-        this.socketChannel = (SocketChannel) key.channel();
-    }
-    @Override
-    protected void sendReponse() {
-        try {
-            socketChannel.write(ByteBuffer.wrap(response.formatToString().getBytes()));
-        }catch (IOException io){
-
-        }
-
+        this.address = address;
     }
 
     @Override
-    protected void close() {
-        try {
-            socketChannel.close();
-        }catch (IOException io){
-
-        }
-
+    protected void sendReponse() throws IOException {
+        SocketChannel socketChannel = (SocketChannel) key.channel();
+        socketChannel.write(ByteBuffer.wrap(response.formatToString().getBytes(Config.CHARSET)));
     }
 
     @Override
-    protected String buildRequestStr() {
-        final int MAX_LENGTH = 4096 * 20;
-        try {
-            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(512);
-            int len = socketChannel.read(byteBuffer);
-            if(len < MAX_LENGTH){
-                byteBuffer.flip();
-                byte[] data = new byte[byteBuffer.remaining()];
-                byteBuffer.get(data);
-                return new String(data);
+    protected void close() throws IOException {
+        SocketChannel socketChannel = (SocketChannel) key.channel();
+        socketChannel.close();
+    }
 
-            }else {
-                return null;
-            }
-
-        } catch (IOException ex){
-
+    @Override
+    protected String buildRequestStr() throws IOException{
+        SocketChannel socketChannel = (SocketChannel) key.channel();
+        ByteBuffer buffer = (ByteBuffer) key.attachment();
+        buffer.clear();
+        String receive = null;
+        if ((socketChannel.read(buffer)) != -1) {
+            buffer.flip();
+            receive = Charset.forName(Config.CHARSET).newDecoder().decode(buffer).toString();
         }
-        return null;
+        return receive;
     }
 }

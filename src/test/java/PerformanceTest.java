@@ -18,7 +18,7 @@ public class PerformanceTest {
         Core.init(HelloServlet.class);
         long startTime = System.currentTimeMillis();
         List<Callable<Void>> callables = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100000; i++) {
             callables.add(() -> {
                 try {
                     Util.get(url);

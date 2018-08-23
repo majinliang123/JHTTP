@@ -1,5 +1,8 @@
 package org.messtin.jhttp.server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.messtin.jhttp.config.Config;
 import org.messtin.jhttp.process.NioProcesser;
 import org.messtin.jhttp.process.Pool;
 
@@ -14,19 +17,19 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 public class NioServer implements Server {
+    private static final Logger logger = LogManager.getLogger(NioServer.class);
 
     private Selector selector;
 
-    public NioServer(int port) {
-        try {
-            selector = Selector.open();
-            ServerSocketChannel server = ServerSocketChannel.open();
-            server.configureBlocking(false);
-            ServerSocket serverSocket = server.socket();
-            serverSocket.bind(new InetSocketAddress(port));
-            server.register(selector, SelectionKey.OP_ACCEPT);
-        } catch (IOException ex) {
-        }
+    public NioServer(int port) throws IOException {
+        selector = Selector.open();
+        ServerSocketChannel server = ServerSocketChannel.open();
+        server.configureBlocking(false);
+        ServerSocket serverSocket = server.socket();
+        serverSocket.bind(new InetSocketAddress(port));
+        server.register(selector, SelectionKey.OP_ACCEPT);
+
+        logger.info("Server listened on port: " + port);
     }
 
     @Override
@@ -36,26 +39,19 @@ public class NioServer implements Server {
                 try {
                     selector.select();
                     Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
-
                     while (iter.hasNext()) {
                         SelectionKey key = iter.next();
-                        iter.remove();
-
                         if (key.isAcceptable()) {
-                            ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
-                            SocketChannel sc = ssc.accept();
-                            sc.configureBlocking(false);
-                            sc.register(selector, SelectionKey.OP_READ);
-
+                            SocketChannel socketChannel = ((ServerSocketChannel) key.channel()).accept();
+                            socketChannel.configureBlocking(false);
+                            socketChannel.register(key.selector(), SelectionKey.OP_READ, ByteBuffer.allocate(Config.BUFFER_SIZE));
                         } else if (key.isReadable()) {
-                            SocketChannel sc = (SocketChannel) key.channel();
-//                            sc.register(selector, SelectionKey.OP_WRITE);
-                            Pool.submit(new NioProcesser(key));
+                            String remoteAddress = ((SocketChannel) key.channel()).getRemoteAddress().toString();
+                            logger.info("Handling request from: {}", remoteAddress);
+                            new NioProcesser(key, remoteAddress).process();
+//                            Pool.submit(new NioProcesser(key, (SocketChannel) key.channel()));
                         }
-//                        } else if(key.isWritable()){
-//                            SocketChannel clientChannel = (SocketChannel) key.channel();
-//                            clientChannel.close();
-//                        }
+                        iter.remove();
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
