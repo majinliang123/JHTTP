@@ -49,7 +49,7 @@ public class NioServer implements Server {
                             String remoteAddress = ((SocketChannel) key.channel()).getRemoteAddress().toString();
                             logger.info("Handling request from: {}", remoteAddress);
                             new NioProcesser(key, remoteAddress).process();
-//                            Pool.submit(new NioProcesser(key, (SocketChannel) key.channel()));
+//                            ThreadPool.submit(new NioProcesser(key, (SocketChannel) key.channel()));
                         }
                         iter.remove();
                     }

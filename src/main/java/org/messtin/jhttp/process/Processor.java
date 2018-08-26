@@ -12,10 +12,7 @@ import org.messtin.jhttp.entity.HttpResponse;
 import org.messtin.jhttp.servlet.HttpServlet;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public abstract class Processor {
     private static final Logger logger = LogManager.getLogger(Processor.class);
@@ -118,7 +115,18 @@ public abstract class Processor {
     }
 
     private void buildBody(String bodyStr) {
-        request.setBody(bodyStr);
+        request.setBody(bodyStr.getBytes());
+        if(Constants.APPLICATION_FORM_URLENCODED.equals(request.getHeaders().get(Constants.CONTENT_TYPE))){
+            // build params
+            Map<String, List<Object>> params =new HashMap<>();
+            String[] paramArr= bodyStr.split(Constants.AMPERSAND);
+            for(String paramStr : paramArr){
+                int index = paramStr.indexOf(Constants.EQUAL);
+                List<Object> vals = new ArrayList<>();
+                vals.add(paramStr.substring(index + 1));
+                params.put(paramStr.substring(0, index), vals);
+            }
+        }
     }
 
     private void buildCookie(){

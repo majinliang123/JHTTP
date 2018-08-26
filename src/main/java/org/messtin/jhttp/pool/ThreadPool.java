@@ -1,11 +1,12 @@
-package org.messtin.jhttp.process;
+package org.messtin.jhttp.pool;
 
 import org.messtin.jhttp.config.Config;
+import org.messtin.jhttp.process.Processor;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Pool {
+public class ThreadPool {
 
     // init firstly so that could process request more fast.
     private static ExecutorService pool =

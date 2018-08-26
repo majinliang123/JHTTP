@@ -23,7 +23,6 @@ public final class Util {
             }
             bytes = byteArrayOut.toByteArray();
             String str = bytes != null ? new String(bytes) : null;
-            System.out.println(str);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

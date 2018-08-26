@@ -1,6 +1,7 @@
 package org.messtin.jhttp.entity;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HttpRequest {
@@ -16,7 +17,9 @@ public class HttpRequest {
     private String url;
     private Method method;
     private String version;
-    private String body;
+    private byte[] body;
+    private Map<String, String> query; // for query params in url.
+    private Map<String, List<Object>> params; // for post form.
     private Map<String, String> headers;
 
     public String getUrl() {
@@ -43,11 +46,11 @@ public class HttpRequest {
         this.version = version;
     }
 
-    public String getBody() {
+    public byte[] getBody() {
         return body;
     }
 
-    public void setBody(String body) {
+    public void setBody(byte[] body) {
         this.body = body;
     }
 
@@ -59,4 +62,19 @@ public class HttpRequest {
         this.headers = headers;
     }
 
+    public Map<String, String> getQuery() {
+        return query;
+    }
+
+    public void setQuery(Map<String, String> query) {
+        this.query = query;
+    }
+
+    public Map<String, List<Object>> getParams() {
+        return params;
+    }
+
+    public void setParams(Map<String, List<Object>> params) {
+        this.params = params;
+    }
 }
