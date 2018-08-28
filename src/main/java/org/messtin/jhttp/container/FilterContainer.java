@@ -1,7 +1,7 @@
 package org.messtin.jhttp.container;
 
 import org.messtin.jhttp.servlet.HttpFilter;
-import org.messtin.jhttp.util.Util;
+import org.messtin.jhttp.util.ServletUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +29,7 @@ public final class FilterContainer {
         if (antMatch) {
             return filterMap.keySet()
                     .stream()
-                    .filter(filterRegex -> Util.isAntMatch(path, filterRegex))
+                    .filter(filterRegex -> ServletUtil.isAntMatch(path, filterRegex))
                     .map(filterRegex -> filterMap.get(filterRegex))
                     .collect(Collectors.toList());
 

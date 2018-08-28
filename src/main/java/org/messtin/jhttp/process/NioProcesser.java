@@ -1,6 +1,10 @@
 package org.messtin.jhttp.process;
 
 import org.messtin.jhttp.config.Config;
+import org.messtin.jhttp.config.Constants;
+import org.messtin.jhttp.entity.HttpRequest;
+import org.messtin.jhttp.exception.HttpException;
+import org.messtin.jhttp.util.HttpUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,15 +36,48 @@ public class NioProcesser extends Processor {
     }
 
     @Override
-    protected String buildRequestStr() throws IOException{
+    protected byte[] buildHeaders() throws IOException {
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        ByteBuffer buffer = (ByteBuffer) key.attachment();
-        buffer.clear();
-        String receive = null;
-        if ((socketChannel.read(buffer)) != -1) {
-            buffer.flip();
-            receive = Charset.forName(Config.CHARSET).newDecoder().decode(buffer).toString();
+        ByteBuffer buffer = ByteBuffer.allocate(Config.MAX_HEADER);
+
+        boolean isReadEnd = false;
+        int len = socketChannel.read(buffer);
+        if (len < Config.MAX_HEADER) {
+            isReadEnd = true;
         }
-        return receive;
+
+        buffer.flip();
+        byte[] b = new byte[len];
+        buffer.get(b);
+        String reqStr = new String(b);
+
+        if (!reqStr.contains(Constants.HTTP_SEPARATOR)) {
+            throw new HttpException("");
+        }
+
+        String[] contextArr = reqStr.split(Constants.HTTP_SEPARATOR);
+        String headerStr = contextArr[0];
+        String bodyStr = null;
+        if(contextArr.length > 1){
+            bodyStr = contextArr[1];
+        }
+
+        HttpUtil.buildHeader(headerStr, request);
+        if (request.getMethod().equals(HttpRequest.Method.POST)) {
+            byte[] currentBody = bodyStr.getBytes();
+            if (isReadEnd) {
+                return currentBody;
+            }else {
+                int bodyLen =Integer.parseInt(request.getHeaders().get(Constants.CONTENT_LENGTH));
+                int leftLen = bodyLen - currentBody.length;
+                ByteBuffer leftBuffer = ByteBuffer.allocate(leftLen);
+                socketChannel.read(leftBuffer);
+                byte[] leftBody = new byte[leftLen];
+                return HttpUtil.mergeByte(currentBody, leftBody);
+            }
+        } else {
+            return new byte[0];
+        }
+
     }
 }

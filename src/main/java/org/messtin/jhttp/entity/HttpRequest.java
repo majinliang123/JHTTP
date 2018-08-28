@@ -18,6 +18,7 @@ public class HttpRequest {
     private Method method;
     private String version;
     private byte[] body;
+    private String sessionId;
     private Map<String, String> query; // for query params in url.
     private Map<String, List<Object>> params; // for post form.
     private Map<String, String> headers;
@@ -76,5 +77,13 @@ public class HttpRequest {
 
     public void setParams(Map<String, List<Object>> params) {
         this.params = params;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }

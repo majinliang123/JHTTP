@@ -2,9 +2,14 @@ package org.messtin.jhttp.process;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.messtin.jhttp.config.Config;
+import org.messtin.jhttp.config.Constants;
+import org.messtin.jhttp.entity.HttpRequest;
 import org.messtin.jhttp.exception.HttpException;
+import org.messtin.jhttp.util.HttpUtil;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.Socket;
 
 /**
@@ -24,25 +29,45 @@ public class BioProcesser extends Processor {
     }
 
     @Override
-    protected String buildRequestStr() {
-        try {
-            InputStreamReader reader =
-                    new InputStreamReader(new BufferedInputStream(socket.getInputStream()));
-            StringBuilder reqStrBuilder = new StringBuilder();
+    protected byte[] buildHeaders() throws IOException {
+        InputStream in = new BufferedInputStream(socket.getInputStream());
 
-            char[] c = new char[4096];
-            int len = -1;
-            do {
-                len = reader.read(c);
-                reqStrBuilder.append(c, 0, len);
-            } while (len == 4096);
-
-            return reqStrBuilder.toString();
-        } catch (IOException ex) {
-            logger.error("Failed read input stream from address: {}",
-                    socket.getRemoteSocketAddress());
-            throw new HttpException("Failed read request.");
+        boolean isReadEnd = false;
+        byte[] b = new byte[Config.MAX_HEADER];
+        int len = in.read(b);
+        if (len < Config.MAX_HEADER) {
+            isReadEnd = true;
         }
+
+        String reqStr = new String(b);
+
+        if (!reqStr.contains(Constants.HTTP_SEPARATOR)) {
+            throw new HttpException("");
+        }
+        String[] contextArr = reqStr.split(Constants.HTTP_SEPARATOR);
+        String headerStr = contextArr[0];
+        String bodyStr = null;
+        if(contextArr.length > 1){
+            bodyStr = contextArr[1];
+        }
+
+        HttpUtil.buildHeader(headerStr, request);
+        if (request.getMethod().equals(HttpRequest.Method.POST)) {
+            byte[] currentBody = bodyStr.getBytes();
+            if (isReadEnd) {
+                return currentBody;
+            } else {
+                int bodyLen = Integer.parseInt(request.getHeaders().get(Constants.CONTENT_LENGTH));
+                int leftLen = bodyLen - currentBody.length;
+                byte[] leftBody = new byte[leftLen];
+                in.read(leftBody);
+                return HttpUtil.mergeByte(currentBody, leftBody);
+            }
+        } else {
+            return new byte[0];
+        }
+
+
     }
 
     @Override

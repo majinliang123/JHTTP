@@ -1,5 +1,8 @@
 package org.messtin.jhttp.entity;
 
+import org.messtin.jhttp.config.Config;
+import org.messtin.jhttp.config.Constants;
+
 import java.util.Date;
 
 public class HttpResponse {
@@ -10,7 +13,7 @@ public class HttpResponse {
     private int contentLength;
     private String body = "";
     private String contentType = "text/plain";
-    private String setCookie;
+    private String sessionId;
 
     public String getVersion() {
         return version;
@@ -68,12 +71,12 @@ public class HttpResponse {
         this.contentType = contentType;
     }
 
-    public String getSetCookie() {
-        return setCookie;
+    public String getSessionId() {
+        return sessionId;
     }
 
-    public void setSetCookie(String setCookie) {
-        this.setCookie = setCookie;
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     public String formatToString(){
@@ -94,7 +97,7 @@ public class HttpResponse {
         stringBuilder.append(contentType);
         stringBuilder.append("\r\n");
         stringBuilder.append("Set-Cookie: ");
-        stringBuilder.append(setCookie);
+        stringBuilder.append(Config.SESSION_NAME + Constants.EQUAL +  sessionId);
         stringBuilder.append("\r\n\r\n");
         stringBuilder.append(body);
         return stringBuilder.toString();
