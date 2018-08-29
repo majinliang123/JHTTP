@@ -7,6 +7,8 @@ import org.messtin.jhttp.config.Constants;
 import org.messtin.jhttp.container.FilterContainer;
 import org.messtin.jhttp.container.ServletContainer;
 import org.messtin.jhttp.container.SessionContainer;
+import org.messtin.jhttp.exception.RequestException;
+import org.messtin.jhttp.exception.ResponseException;
 import org.messtin.jhttp.servlet.HttpFilter;
 import org.messtin.jhttp.entity.HttpRequest;
 import org.messtin.jhttp.entity.HttpResponse;
@@ -18,7 +20,7 @@ import java.util.*;
 public abstract class Processor {
     private static final Logger logger = LogManager.getLogger(Processor.class);
 
-    protected  String remoteAddress;
+    protected String remoteAddress;
     protected HttpRequest request;
     protected HttpResponse response;
 
@@ -28,7 +30,7 @@ public abstract class Processor {
         this.response = new HttpResponse();
     }
 
-    public void process (){
+    public void process() {
         logger.info("Start process request from: {}", remoteAddress);
         try {
             buildRequest();
@@ -38,34 +40,62 @@ public abstract class Processor {
             sendReponse();
             close();
             logger.info("Complete process request from: {}", remoteAddress);
-        }catch (Exception e){
+        } catch (RequestException ex) {
+            buildErrorReponse(Constants.STATUS_CODE_400, ex.getMessage());
+            try {
+                sendReponse();
+            } catch (ResponseException e) {
+                logger.error(ex);
+                e.printStackTrace();
+            }
+            logger.error(ex);
+            ex.printStackTrace();
+        } catch (ReflectiveOperationException ex) {
+            buildErrorReponse(Constants.STATUS_CODE_500, ex.getMessage());
+            try {
+                sendReponse();
+            } catch (ResponseException e) {
+                logger.error(ex);
+                e.printStackTrace();
+            }
+            logger.error(ex);
+            ex.printStackTrace();
+        } catch (ResponseException ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+        } catch (Exception ex) {
             logger.error("Failed to process request from: {}", remoteAddress);
-            logger.error(e);
+            logger.error(ex);
+            ex.printStackTrace();
         }
 
     }
 
-    protected void buildRequest() throws IOException{
+    protected void buildRequest() throws IOException, RequestException {
         byte[] body = buildHeaders();
-        if(body.length > 0){
+        if (body.length > 0) {
             request.setBody(body);
+            buildBody(body);
         }
     }
 
-    abstract protected byte[] buildHeaders() throws IOException;
+    abstract protected byte[] buildHeaders() throws IOException, RequestException;
 
     private void doFilter(HttpRequest request, HttpResponse response) {
         String url = request.getUrl();
-        List<HttpFilter> httpFilters= FilterContainer.get(url, Config.FILTER_ANT_MATCH);
+        List<HttpFilter> httpFilters = FilterContainer.get(url, Config.FILTER_ANT_MATCH);
         if (httpFilters != null) {
             httpFilters.stream()
-                    .forEach(httpFilter ->{
+                    .forEach(httpFilter -> {
                         httpFilter.doFilter(request, response);
                     });
         }
     }
 
-    private void doServlet(HttpRequest request, HttpResponse response) throws IllegalAccessException, InstantiationException {
+    private void doServlet(HttpRequest request, HttpResponse response) throws ReflectiveOperationException {
         String url = request.getUrl();
         Class<HttpServlet> httpServlet = ServletContainer.get(url);
         if (httpServlet != null) {
@@ -78,23 +108,24 @@ public abstract class Processor {
         response.setStatusCode(Constants.STATUS_CODE_200);
         response.setMessage(Constants.STATUS_MESSAGE_OK);
         response.setDate(new Date());
-        response.setContentLength(response.getBody().getBytes().length);
+        response.setContentLength(response.getBody().length);
 
         buildCookie();
     }
 
-    protected abstract void sendReponse() throws IOException;
+    protected abstract void sendReponse() throws ResponseException;
 
-    protected abstract void close() throws IOException;
+    protected abstract void close() throws ResponseException;
 
-    /**  other functions  */
-    private void buildBody(String bodyStr) {
-        request.setBody(bodyStr.getBytes());
-        if(Constants.APPLICATION_FORM_URLENCODED.equals(request.getHeaders().get(Constants.CONTENT_TYPE))){
-            // build params
-            Map<String, List<Object>> params =new HashMap<>();
-            String[] paramArr= bodyStr.split(Constants.AMPERSAND);
-            for(String paramStr : paramArr){
+    /**
+     * other functions
+     */
+    private void buildBody(byte[] body) {
+        if (Constants.APPLICATION_FORM_URLENCODED.equals(request.getHeaders().get(Constants.CONTENT_TYPE))) {
+            String bodyStr = new String(body);
+            Map<String, List<Object>> params = new HashMap<>();
+            String[] paramArr = bodyStr.split(Constants.AMPERSAND);
+            for (String paramStr : paramArr) {
                 int index = paramStr.indexOf(Constants.EQUAL);
                 List<Object> vals = new ArrayList<>();
                 vals.add(paramStr.substring(index + 1));
@@ -103,14 +134,30 @@ public abstract class Processor {
         }
     }
 
-    private void buildCookie(){
+    private void buildCookie() {
         String sessionId = request.getSessionId();
-        if(sessionId != null && SessionContainer.get(sessionId) != null){
+        if (sessionId != null && SessionContainer.get(sessionId) != null) {
             response.setSessionId(request.getSessionId());
-        }else{
+        } else {
             sessionId = SessionContainer.create();
             response.setSessionId(sessionId);
         }
+    }
+
+    private void buildErrorReponse(int statusCode, String message){
+        response = new HttpResponse();
+        response.setVersion(Constants.HTTP_V1_1_VERSION);
+        if(statusCode>=400 && statusCode < 500){
+            response.setStatusCode(Constants.STATUS_CODE_400);
+            response.setMessage(Constants.STATUS_MESSAGE_BAD_REQUEST);
+        }else if(statusCode >= 500){
+            response.setStatusCode(Constants.STATUS_CODE_500);
+            response.setMessage(Constants.STATUS_MESSAGE_INTERNAL_SERVER_ERROR);
+        }
+        response.setBody(message.getBytes());
+        response.setDate(new Date());
+        response.setContentLength(response.getBody().length);
+
     }
 
 }

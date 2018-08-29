@@ -2,17 +2,21 @@
 
 ### Basic
 A Http server which is similar to tomcat.
-It is updating.
+**Basic completed, but need improve.**
 
 ### Functions
-
 - support basic http request
 - support session
 - support Servlet
 - support Filter
+- support post x-www-form-urlencoded
 
 ### Performance
-- BioServer could accept 1000 requests in 1086ms.
+- BioServer could accept 100000 requests in 20327ms.
+
+### TODO
+- Import config from properties
+- Use annotation to init the server
 
 ### Acknowledgement
 Learn a lot from below repository

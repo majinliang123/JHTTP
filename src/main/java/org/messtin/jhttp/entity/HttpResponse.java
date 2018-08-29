@@ -11,7 +11,7 @@ public class HttpResponse {
     private String message;
     private Date date;
     private int contentLength;
-    private String body = "";
+    private byte[] body;
     private String contentType = "text/plain";
     private String sessionId;
 
@@ -55,12 +55,16 @@ public class HttpResponse {
         this.contentLength = contentLength;
     }
 
-    public String getBody() {
+    public byte[] getBody() {
         return body;
     }
 
-    public void setBody(String body) {
+    public void setBody(byte[] body) {
         this.body = body;
+    }
+
+    public void setBody(String body){
+        this.body = body.getBytes();
     }
 
     public String getContentType() {
@@ -96,8 +100,10 @@ public class HttpResponse {
         stringBuilder.append("Content-Type: ");
         stringBuilder.append(contentType);
         stringBuilder.append("\r\n");
-        stringBuilder.append("Set-Cookie: ");
-        stringBuilder.append(Config.SESSION_NAME + Constants.EQUAL +  sessionId);
+        if(Config.OPEN_SESSION && sessionId != null){
+            stringBuilder.append("Set-Cookie: ");
+            stringBuilder.append(Config.SESSION_NAME + Constants.EQUAL +  sessionId);
+        }
         stringBuilder.append("\r\n\r\n");
         stringBuilder.append(body);
         return stringBuilder.toString();

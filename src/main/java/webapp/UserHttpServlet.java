@@ -9,6 +9,6 @@ import org.messtin.jhttp.servlet.HttpServlet;
 public class UserHttpServlet extends HttpServlet {
     @Override
     public void doService(HttpRequest request, HttpResponse response) {
-        response.setBody("Hello zhushuli.");
+        response.setBody("Hello zhushuli.".getBytes());
     }
 }

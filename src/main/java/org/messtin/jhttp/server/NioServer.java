@@ -2,14 +2,12 @@ package org.messtin.jhttp.server;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.messtin.jhttp.config.Config;
 import org.messtin.jhttp.pool.ThreadPool;
 import org.messtin.jhttp.process.NioProcesser;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -33,7 +31,7 @@ public class NioServer implements Server {
     }
 
     @Override
-    public void service() throws IOException {
+    public void service() {
         ThreadPool.submit(() -> {
             while (true) {
                 try {
@@ -54,6 +52,7 @@ public class NioServer implements Server {
                         iter.remove();
                     }
                 } catch (IOException e) {
+                    logger.error("Failed accept request.");
                     e.printStackTrace();
                 }
             }

@@ -22,7 +22,7 @@ public class BioServer implements Server {
     }
 
     @Override
-    public void service() throws IOException {
+    public void service() {
         ThreadPool.submit(() -> {
             while (true) {
                 try {

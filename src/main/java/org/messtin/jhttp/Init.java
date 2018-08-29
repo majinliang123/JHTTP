@@ -59,8 +59,8 @@ public final class Init {
     }
 
     private static void initServer() throws IOException {
-//        Server server = new BioServer(Config.PORT);
-        Server server = new NioServer(Config.PORT);
+        Server server = new BioServer(Config.PORT);
+//        Server server = new NioServer(Config.PORT);
         server.service();
     }
 

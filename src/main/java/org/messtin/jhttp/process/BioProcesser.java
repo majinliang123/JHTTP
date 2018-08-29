@@ -5,11 +5,12 @@ import org.apache.logging.log4j.Logger;
 import org.messtin.jhttp.config.Config;
 import org.messtin.jhttp.config.Constants;
 import org.messtin.jhttp.entity.HttpRequest;
-import org.messtin.jhttp.exception.HttpException;
+import org.messtin.jhttp.exception.RequestException;
+import org.messtin.jhttp.exception.ResponseException;
+import org.messtin.jhttp.exception.ServerException;
 import org.messtin.jhttp.util.HttpUtil;
 
 import java.io.*;
-import java.net.HttpURLConnection;
 import java.net.Socket;
 
 /**
@@ -29,7 +30,7 @@ public class BioProcesser extends Processor {
     }
 
     @Override
-    protected byte[] buildHeaders() throws IOException {
+    protected byte[] buildHeaders() throws IOException, RequestException {
         InputStream in = new BufferedInputStream(socket.getInputStream());
 
         boolean isReadEnd = false;
@@ -42,12 +43,12 @@ public class BioProcesser extends Processor {
         String reqStr = new String(b);
 
         if (!reqStr.contains(Constants.HTTP_SEPARATOR)) {
-            throw new HttpException("");
+            throw new RequestException("The request header is illegal.");
         }
         String[] contextArr = reqStr.split(Constants.HTTP_SEPARATOR);
         String headerStr = contextArr[0];
         String bodyStr = null;
-        if(contextArr.length > 1){
+        if (contextArr.length > 1) {
             bodyStr = contextArr[1];
         }
 
@@ -66,12 +67,10 @@ public class BioProcesser extends Processor {
         } else {
             return new byte[0];
         }
-
-
     }
 
     @Override
-    protected void sendReponse() {
+    protected void sendReponse() throws ResponseException {
         try (OutputStreamWriter writer =
                      new OutputStreamWriter(new BufferedOutputStream(socket.getOutputStream()))) {
 
@@ -79,15 +78,17 @@ public class BioProcesser extends Processor {
             writer.flush();
         } catch (IOException ex) {
             logger.error("Failed to write response to address: {}", socket.getRemoteSocketAddress());
+            throw new ResponseException(ex);
         }
     }
 
     @Override
-    protected void close() {
+    protected void close() throws ResponseException {
         try {
             socket.close();
         } catch (Exception ex) {
             logger.error("Failed to close socket with address: {}", socket.getRemoteSocketAddress());
+            throw new ResponseException(ex);
         }
     }
 }
