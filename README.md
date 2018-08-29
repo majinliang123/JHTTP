@@ -5,6 +5,7 @@ A Http server which is similar to tomcat.
 **Basic completed, but need improve.**
 
 ### Functions
+- support nio and block io
 - support basic http request
 - support session
 - support Servlet
