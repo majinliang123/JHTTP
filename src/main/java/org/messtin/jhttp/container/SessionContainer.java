@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class SessionContainer {
-    private static final ConcurrentHashMap<String, HttpSession> sessionMap = new ConcurrentHashMap<>();
+    private static final volatile ConcurrentHashMap<String, HttpSession> sessionMap = new ConcurrentHashMap<>();
 
     static {
         SchedulePool.schedule(()->{
