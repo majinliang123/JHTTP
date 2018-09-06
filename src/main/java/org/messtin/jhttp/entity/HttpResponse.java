@@ -105,7 +105,7 @@ public class HttpResponse {
             stringBuilder.append(Config.SESSION_NAME + Constants.EQUAL +  sessionId);
         }
         stringBuilder.append("\r\n\r\n");
-        stringBuilder.append(body);
+        stringBuilder.append(new String(body));
         return stringBuilder.toString();
     }
 }
