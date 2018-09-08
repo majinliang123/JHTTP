@@ -1,6 +1,6 @@
 package org.messtin.jhttp.container;
 
-import org.messtin.jhttp.servlet.HttpFilter;
+import org.messtin.jhttp.servlet.AbstractHttpFilter;
 import org.messtin.jhttp.util.ServletUtil;
 
 import java.util.HashMap;
@@ -10,18 +10,18 @@ import java.util.stream.Collectors;
 
 public final class FilterContainer {
 
-    private static Map<String, HttpFilter> filterMap;
+    private static Map<String, AbstractHttpFilter> filterMap;
 
     // lazy init when have httpFilter
     // new httpFilter will replace old httpFilter if have same path
-    public static void put(String path, HttpFilter httpFilter) {
+    public static void put(String path, AbstractHttpFilter httpFilter) {
         if (filterMap == null) {
             filterMap = new HashMap<>();
         }
         filterMap.put(path, httpFilter);
     }
 
-    public static List<HttpFilter> get(String path, boolean antMatch) {
+    public static List<AbstractHttpFilter> get(String path, boolean antMatch) {
         if (filterMap == null) {
             return null;
         }

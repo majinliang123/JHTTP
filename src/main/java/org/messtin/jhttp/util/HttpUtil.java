@@ -6,7 +6,13 @@ import org.messtin.jhttp.entity.HttpRequest;
 
 import java.util.Arrays;
 
-public class HttpUtil {
+/**
+ * The Util about build {@link HttpRequest} and
+ * {@link org.messtin.jhttp.entity.HttpResponse}
+ *
+ * @author majinliang
+ */
+public final class HttpUtil {
     public static void buildHeader(String headerStr, HttpRequest request) {
         String[] headers = headerStr.split("\r\n");
 
@@ -26,8 +32,9 @@ public class HttpUtil {
                 });
 
         String cookieStr = request.getHeaders().get(Constants.COOKIE);
-        if(cookieStr == null)
+        if (cookieStr == null) {
             return;
+        }
         String[] cookieArr = cookieStr.split(Constants.SEMICOLON);
         for (String cookie : cookieArr) {
             if (cookie.contains(Config.SESSION_NAME)) {

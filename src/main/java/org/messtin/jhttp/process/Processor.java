@@ -9,10 +9,10 @@ import org.messtin.jhttp.container.ServletContainer;
 import org.messtin.jhttp.container.SessionContainer;
 import org.messtin.jhttp.exception.RequestException;
 import org.messtin.jhttp.exception.ResponseException;
-import org.messtin.jhttp.servlet.HttpFilter;
+import org.messtin.jhttp.servlet.AbstractHttpFilter;
 import org.messtin.jhttp.entity.HttpRequest;
 import org.messtin.jhttp.entity.HttpResponse;
-import org.messtin.jhttp.servlet.HttpServlet;
+import org.messtin.jhttp.servlet.AbstractHttpServlet;
 
 import java.io.IOException;
 import java.util.*;
@@ -86,7 +86,7 @@ public abstract class Processor {
 
     private void doFilter(HttpRequest request, HttpResponse response) {
         String url = request.getUrl();
-        List<HttpFilter> httpFilters = FilterContainer.get(url, Config.FILTER_ANT_MATCH);
+        List<AbstractHttpFilter> httpFilters = FilterContainer.get(url, Config.FILTER_ANT_MATCH);
         if (httpFilters != null) {
             httpFilters.stream()
                     .forEach(httpFilter -> {
@@ -97,7 +97,7 @@ public abstract class Processor {
 
     private void doServlet(HttpRequest request, HttpResponse response) throws ReflectiveOperationException {
         String url = request.getUrl();
-        Class<HttpServlet> httpServlet = ServletContainer.get(url);
+        Class<AbstractHttpServlet> httpServlet = ServletContainer.get(url);
         if (httpServlet != null) {
             httpServlet.newInstance().doService(request, response);
         }

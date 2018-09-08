@@ -10,6 +10,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * The server for bio
+ *
+ * @author majinliang
+ */
 public class BioServer implements Server {
 
     private static final Logger logger = LogManager.getLogger(BioServer.class);
@@ -21,6 +26,11 @@ public class BioServer implements Server {
         logger.info("Server listened on port: " + port);
     }
 
+    /**
+     * When accept a request, will get its {@link Socket}
+     * and process it with {@link BioProcesser}
+     * the processor will be submitted to {@link ThreadPool}
+     */
     @Override
     public void service() {
         ThreadPool.submit(() -> {

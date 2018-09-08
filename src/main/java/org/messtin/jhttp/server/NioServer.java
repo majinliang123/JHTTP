@@ -14,6 +14,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
+/**
+ * The server for nio
+ * @author majinliang
+ */
 public class NioServer implements Server {
     private static final Logger logger = LogManager.getLogger(NioServer.class);
 
@@ -46,8 +50,7 @@ public class NioServer implements Server {
                         } else if (key.isReadable()) {
                             String remoteAddress = ((SocketChannel) key.channel()).getRemoteAddress().toString();
                             logger.info("Handling request from: {}", remoteAddress);
-//                            new NioProcesser(key, remoteAddress).process();
-                            ThreadPool.submit(new NioProcesser(key, remoteAddress));
+                            new NioProcesser(key, remoteAddress).process();
                             key.cancel();
                         }
                         iter.remove();
