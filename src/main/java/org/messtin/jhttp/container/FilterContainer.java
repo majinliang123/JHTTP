@@ -8,12 +8,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * The container of {@link AbstractHttpFilter}
+ *
+ * @author majinliang
+ */
 public final class FilterContainer {
 
+    /**
+     * a map from:
+     * path{@link String} -> filter{@link AbstractHttpFilter}
+     */
     private static Map<String, AbstractHttpFilter> filterMap;
 
-    // lazy init when have httpFilter
-    // new httpFilter will replace old httpFilter if have same path
+    /**
+     * Lazy init when have httpFilter
+     * new httpFilter will replace old httpFilter if have same path
+     *
+     * @param path the path of filter
+     * @param httpFilter filter
+     */
     public static void put(String path, AbstractHttpFilter httpFilter) {
         if (filterMap == null) {
             filterMap = new HashMap<>();

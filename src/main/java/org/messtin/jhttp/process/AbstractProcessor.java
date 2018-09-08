@@ -17,63 +17,79 @@ import org.messtin.jhttp.servlet.AbstractHttpServlet;
 import java.io.IOException;
 import java.util.*;
 
-public abstract class Processor {
-    private static final Logger logger = LogManager.getLogger(Processor.class);
+/**
+ * The core class to process a request.
+ * It uses template pattern.
+ * <p>
+ * Every processor need extends this class and implement the abstract
+ * because different io will read request as different way.
+ *
+ * @author majinliang
+ */
+public abstract class AbstractProcessor {
+    private static final Logger logger = LogManager.getLogger(AbstractProcessor.class);
 
-    protected String remoteAddress;
+    private String remoteAddress;
     protected HttpRequest request;
     protected HttpResponse response;
 
-    public Processor(String remoteAddress) {
+    public AbstractProcessor(String remoteAddress) {
         this.remoteAddress = remoteAddress;
         this.request = new HttpRequest();
         this.response = new HttpResponse();
     }
 
+    /**
+     * Template pattern
+     * <p>
+     * When exception because of request, will send response with 400
+     * When exception because of server, will send response with 500
+     */
     public void process() {
         logger.info("Start process request from: {}", remoteAddress);
         try {
             buildRequest();
             doFilter(request, response);
             doServlet(request, response);
-            buildReponse();
-            sendReponse();
+            buildResponse();
+            sendResponse();
             close();
             logger.info("Complete process request from: {}", remoteAddress);
         } catch (RequestException ex) {
-            buildErrorReponse(Constants.STATUS_CODE_400, ex.getMessage());
+            buildErrorResponse(Constants.STATUS_CODE_400, ex.getMessage());
             try {
-                sendReponse();
+                sendResponse();
             } catch (ResponseException e) {
-                logger.error(ex);
                 e.printStackTrace();
             }
             logger.error(ex);
             ex.printStackTrace();
         } catch (ReflectiveOperationException ex) {
-            buildErrorReponse(Constants.STATUS_CODE_500, ex.getMessage());
+            buildErrorResponse(Constants.STATUS_CODE_500, ex.getMessage());
             try {
-                sendReponse();
+                sendResponse();
             } catch (ResponseException e) {
-                logger.error(ex);
                 e.printStackTrace();
             }
-            logger.error(ex);
             ex.printStackTrace();
         } catch (ResponseException ex) {
-            logger.error(ex);
             ex.printStackTrace();
         } catch (IOException ex) {
-            logger.error(ex);
             ex.printStackTrace();
         } catch (Exception ex) {
             logger.error("Failed to process request from: {}", remoteAddress);
-            logger.error(ex);
             ex.printStackTrace();
         }
 
     }
 
+    /**
+     * The request message structure:
+     * <a href="http://www.runoob.com/http/http-messages.html">Http Structure</a>
+     *
+     * @throws IOException      exception when read stream from client
+     * @throws RequestException exception when the request is not unabridged
+     */
     protected void buildRequest() throws IOException, RequestException {
         byte[] body = buildHeaders();
         if (body.length > 0) {
@@ -82,6 +98,13 @@ public abstract class Processor {
         }
     }
 
+    /**
+     * Build request's head, and use the data length in header to build request body
+     *
+     * @return byte[] request body
+     * @throws IOException      exception when read request because of IO
+     * @throws RequestException exception when the request is not unabridged
+     */
     abstract protected byte[] buildHeaders() throws IOException, RequestException;
 
     private void doFilter(HttpRequest request, HttpResponse response) {
@@ -103,7 +126,7 @@ public abstract class Processor {
         }
     }
 
-    private void buildReponse() {
+    private void buildResponse() {
         response.setVersion(Constants.HTTP_V1_1_VERSION);
         response.setStatusCode(Constants.STATUS_CODE_200);
         response.setMessage(Constants.STATUS_MESSAGE_OK);
@@ -113,8 +136,18 @@ public abstract class Processor {
         buildCookie();
     }
 
-    protected abstract void sendReponse() throws ResponseException;
+    /**
+     * Send a response to client
+     *
+     * @throws ResponseException exception when failed to build response because of server error
+     */
+    protected abstract void sendResponse() throws ResponseException;
 
+    /**
+     * Close the connection or io with client
+     *
+     * @throws ResponseException
+     */
     protected abstract void close() throws ResponseException;
 
     /**
@@ -144,13 +177,13 @@ public abstract class Processor {
         }
     }
 
-    private void buildErrorReponse(int statusCode, String message){
+    private void buildErrorResponse(int statusCode, String message) {
         response = new HttpResponse();
         response.setVersion(Constants.HTTP_V1_1_VERSION);
-        if(statusCode>=400 && statusCode < 500){
+        if (statusCode >= 400 && statusCode < 500) {
             response.setStatusCode(Constants.STATUS_CODE_400);
             response.setMessage(Constants.STATUS_MESSAGE_BAD_REQUEST);
-        }else if(statusCode >= 500){
+        } else if (statusCode >= 500) {
             response.setStatusCode(Constants.STATUS_CODE_500);
             response.setMessage(Constants.STATUS_MESSAGE_INTERNAL_SERVER_ERROR);
         }

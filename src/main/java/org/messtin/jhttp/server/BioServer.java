@@ -3,8 +3,8 @@ package org.messtin.jhttp.server;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.messtin.jhttp.pool.ThreadPool;
-import org.messtin.jhttp.process.BioProcesser;
-import org.messtin.jhttp.process.Processor;
+import org.messtin.jhttp.process.BioProcessor;
+import org.messtin.jhttp.process.AbstractProcessor;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -28,7 +28,7 @@ public class BioServer implements Server {
 
     /**
      * When accept a request, will get its {@link Socket}
-     * and process it with {@link BioProcesser}
+     * and process it with {@link BioProcessor}
      * the processor will be submitted to {@link ThreadPool}
      */
     @Override
@@ -40,7 +40,7 @@ public class BioServer implements Server {
                     logger.info("Handling request from: {}",
                             socket.getRemoteSocketAddress());
 
-                    Processor processor = new BioProcesser(socket);
+                    AbstractProcessor processor = new BioProcessor(socket);
                     ThreadPool.submit(processor);
                 } catch (IOException ex) {
                     logger.error("Failed accept request.");

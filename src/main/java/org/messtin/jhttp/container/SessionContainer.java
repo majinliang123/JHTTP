@@ -2,18 +2,32 @@ package org.messtin.jhttp.container;
 
 import org.messtin.jhttp.config.Config;
 import org.messtin.jhttp.entity.HttpSession;
-import org.messtin.jhttp.pool.SchedulePool;
+import org.messtin.jhttp.pool.ScheduledPool;
 
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The container of {@link HttpSession}
+ *
+ * @author majinliang
+ */
 public class SessionContainer {
+
+    /**
+     * A map from:
+     * session id -> http session
+     */
     private static volatile ConcurrentHashMap<String, HttpSession> sessionMap = new ConcurrentHashMap<>();
 
+    /**
+     * Will init a scheduled task to clean the container
+     * every {@link Config#SESSION_CHECK_DURING}
+     */
     static {
-        SchedulePool.schedule(()->{
+        ScheduledPool.schedule(()->{
             sessionMap.values().stream()
                     .filter(session -> session.getEndTime().before(new Date()))
                     .map(HttpSession::getSessionId)

@@ -7,7 +7,6 @@ import org.messtin.jhttp.config.Constants;
 import org.messtin.jhttp.entity.HttpRequest;
 import org.messtin.jhttp.exception.RequestException;
 import org.messtin.jhttp.exception.ResponseException;
-import org.messtin.jhttp.exception.ServerException;
 import org.messtin.jhttp.util.HttpUtil;
 
 import java.io.*;
@@ -15,16 +14,15 @@ import java.net.Socket;
 
 /**
  * The processor for block server
- * <p>
- * The request message structure:
- * http://www.runoob.com/http/http-messages.html
+ *
+ * @author majinliang
  */
-public class BioProcesser extends Processor {
-    private static final Logger logger = LogManager.getLogger(BioProcesser.class);
+public class BioProcessor extends AbstractProcessor {
+    private static final Logger logger = LogManager.getLogger(BioProcessor.class);
 
     private Socket socket;
 
-    public BioProcesser(Socket socket) {
+    public BioProcessor(Socket socket) {
         super(socket.getRemoteSocketAddress().toString());
         this.socket = socket;
     }
@@ -70,7 +68,7 @@ public class BioProcesser extends Processor {
     }
 
     @Override
-    protected void sendReponse() throws ResponseException {
+    protected void sendResponse() throws ResponseException {
         try (OutputStreamWriter writer =
                      new OutputStreamWriter(new BufferedOutputStream(socket.getOutputStream()))) {
 

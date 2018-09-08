@@ -4,6 +4,11 @@ import org.messtin.jhttp.config.Config;
 
 import java.util.Date;
 
+/**
+ * The session of http
+ *
+ * @author majinliang
+ */
 public class HttpSession {
     private String sessionId;
     private Date startTime;

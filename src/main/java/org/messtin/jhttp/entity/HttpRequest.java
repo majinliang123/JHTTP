@@ -4,10 +4,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author majinliang
+ */
 public class HttpRequest {
 
     public enum Method {
-        GET, POST
+        /**
+         * GET method in http
+         */
+        GET,
+
+        /**
+         * POST method in http
+         */
+        POST
     }
 
     public HttpRequest(){
@@ -19,8 +30,8 @@ public class HttpRequest {
     private String version;
     private byte[] body;
     private String sessionId;
-    private Map<String, String> query; // for query params in url.
-    private Map<String, List<Object>> params; // for post form.
+    private Map<String, String> query;
+    private Map<String, List<Object>> params;
     private Map<String, String> headers;
 
     public String getUrl() {

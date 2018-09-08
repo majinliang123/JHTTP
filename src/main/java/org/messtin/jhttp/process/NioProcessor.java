@@ -14,20 +14,25 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
-public class NioProcesser extends Processor {
-    private static final Logger logger = LogManager.getLogger(NioProcesser.class);
+/**
+ * The processor for nio server
+ *
+ * @author majinliang
+ */
+public class NioProcessor extends AbstractProcessor {
+    private static final Logger logger = LogManager.getLogger(NioProcessor.class);
 
     private SelectionKey key;
     private String address;
 
-    public NioProcesser(SelectionKey key, String address) throws IOException {
+    public NioProcessor(SelectionKey key, String address) {
         super(address);
         this.key = key;
         this.address = address;
     }
 
     @Override
-    protected void sendReponse() throws ResponseException {
+    protected void sendResponse() throws ResponseException {
         try {
             SocketChannel socketChannel = (SocketChannel) key.channel();
             socketChannel.write(ByteBuffer.wrap(response.formatToString().getBytes(Config.CHARSET)));

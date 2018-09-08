@@ -3,7 +3,7 @@ package org.messtin.jhttp.server;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.messtin.jhttp.pool.ThreadPool;
-import org.messtin.jhttp.process.NioProcesser;
+import org.messtin.jhttp.process.NioProcessor;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -50,7 +50,7 @@ public class NioServer implements Server {
                         } else if (key.isReadable()) {
                             String remoteAddress = ((SocketChannel) key.channel()).getRemoteAddress().toString();
                             logger.info("Handling request from: {}", remoteAddress);
-                            new NioProcesser(key, remoteAddress).process();
+                            new NioProcessor(key, remoteAddress).process();
                             key.cancel();
                         }
                         iter.remove();

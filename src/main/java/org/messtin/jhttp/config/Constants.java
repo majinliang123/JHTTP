@@ -1,7 +1,10 @@
 package org.messtin.jhttp.config;
 
-import java.io.File;
-
+/**
+ * Constant value
+ *
+ * @author majinliang
+ */
 public interface Constants {
     String HTTP_V1_1_VERSION = "HTTP/1.1";
     int STATUS_CODE_200 = 200;

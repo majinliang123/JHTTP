@@ -5,6 +5,11 @@ import org.messtin.jhttp.config.Constants;
 
 import java.util.Date;
 
+/**
+ * The response of http
+ *
+ * @author majinliang
+ */
 public class HttpResponse {
     private String version;
     private int statusCode;
